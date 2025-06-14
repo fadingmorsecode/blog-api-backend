@@ -64,6 +64,26 @@ exports.getPost = async (req, res) => {
   }
 };
 
+exports.updatePost = async (req, res) => {
+  try {
+    const post = await prisma.post.update({
+      data: {
+        title: req.body.title,
+        body: req.body.body,
+        isPublished: req.body.isPublished,
+      },
+      where: {
+        id: req.body.id,
+        userId: req.user.id,
+      },
+    });
+    res.send(post);
+  } catch (err) {
+    console.error('Post update error', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 exports.deletePost = async (req, res) => {
   try {
     const post = await prisma.post.delete({
