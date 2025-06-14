@@ -34,6 +34,7 @@ exports.getPublishedPosts = async (req, res) => {
 
 exports.getAllUserPosts = async (req, res) => {
   try {
+    console.log(req.user);
     const posts = await prisma.post.findMany({
       where: {
         userId: req.user.id,
@@ -41,7 +42,7 @@ exports.getAllUserPosts = async (req, res) => {
     });
     res.send(posts);
   } catch (err) {
-    console.error('Published posts get error', err);
+    console.error('All user posts get error', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -58,7 +59,22 @@ exports.getPost = async (req, res) => {
     });
     res.send(post);
   } catch (err) {
-    console.error('Published posts get error', err);
+    console.error('Post get error', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+exports.deletePost = async (req, res) => {
+  try {
+    const post = await prisma.post.delete({
+      where: {
+        id: req.body.id,
+        userId: req.user.id,
+      },
+    });
+    res.send(post);
+  } catch (err) {
+    console.error('Post delete error', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
