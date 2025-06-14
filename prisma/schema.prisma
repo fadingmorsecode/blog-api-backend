@@ -31,7 +31,7 @@ model Post {
   title       String
   body        String
   createdAt   DateTime  @default(now())
-  isPublished Boolean   @default(true)
+  isPublished Boolean
 }
 
 model Comment {

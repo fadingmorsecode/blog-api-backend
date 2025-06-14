@@ -31,18 +31,20 @@ exports.userLogin = async (req, res) => {
     if (!user) {
       throw Error('User not found');
     }
-    if (req.body.password !== req.body.confirmPassword) {
-      throw Error('Passwords do not match');
-    }
     const match = await bcrypt.compare(req.body.password, user.password);
     if (!match) {
       throw Error('Password is incorrect');
     }
-    jwt.sign({ user: user }, process.env.SECRETKEY, (err, token) => {
-      res.json({
-        token: token,
-      });
-    });
+    jwt.sign(
+      { user: user },
+      process.env.SECRETKEY,
+      { expiresIn: '7d' },
+      (err, token) => {
+        res.json({
+          token: token,
+        });
+      }
+    );
   } catch (err) {
     console.error('Login error', err);
     res.status(500).json({ error: 'Internal server error' });
