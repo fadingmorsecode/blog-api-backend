@@ -1,7 +1,10 @@
 const bcrypt = require('bcryptjs');
 const { PrismaClient } = require('../generated/prisma');
 const prisma = new PrismaClient();
-exports.userCreatePost = async (req, res, next) => {
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
+
+exports.userCreate = async (req, res) => {
   try {
     const hashedPassword = await bcrypt.hash(req.body.password, 10);
     const user = await prisma.user.create({
@@ -13,7 +16,44 @@ exports.userCreatePost = async (req, res, next) => {
     });
     res.send(user);
   } catch (err) {
-    console.error('Create post error', err);
+    console.error('Create user error', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+exports.userLogin = async (req, res) => {
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        username: req.body.username,
+      },
+    });
+    if (!user) {
+      throw Error('User not found');
+    }
+    if (req.body.password !== req.body.confirmPassword) {
+      throw Error('Passwords do not match');
+    }
+    const match = await bcrypt.compare(req.body.password, user.password);
+    if (!match) {
+      throw Error('Password is incorrect');
+    }
+    jwt.sign({ user: user }, process.env.SECRETKEY, (err, token) => {
+      res.json({
+        token: token,
+      });
+    });
+  } catch (err) {
+    console.error('Login error', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+// exports.userEditPassword = async (req, res) => {
+//     try {
+
+//     } catch (err) {
+//         console.error('Edit user error', err);
+//         res.status(500).json({ error: 'Internal server error'});
+//     }
+// };
