@@ -51,11 +51,26 @@ exports.userLogin = async (req, res) => {
   }
 };
 
-// exports.userEditPassword = async (req, res) => {
-//     try {
-
-//     } catch (err) {
-//         console.error('Edit user error', err);
-//         res.status(500).json({ error: 'Internal server error'});
-//     }
-// };
+exports.editUser = async (req, res) => {
+  try {
+    let hashedPassword;
+    if (req.body.password === req.body.confirmPassword) {
+      hashedPassword = await bcrypt.hash(req.body.password, 10);
+    } else {
+      throw Error('Passwords do not match');
+    }
+    const user = await prisma.user.update({
+      where: {
+        id: req.user.id,
+      },
+      data: {
+        username: req.body.username,
+        password: hashedPassword,
+      },
+    });
+    res.send('Updated: ', user);
+  } catch (err) {
+    console.error('Edit user error', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
